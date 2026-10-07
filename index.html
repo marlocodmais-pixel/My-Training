@@ -361,6 +361,13 @@ button:active{transform:scale(.97)}
 .hint{font-size:13.5px;line-height:1.4;margin:8px 4px 0}
 .ex .cb{font-size:17px}
 .hero[role=button]{cursor:pointer}
+.mseg{display:flex;gap:4px;margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;overflow-x:auto}
+.mseg button{flex:1;white-space:nowrap;padding:8px 6px;border-radius:10px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.mseg button.on{background:var(--card2);color:var(--lime)}
+.setrow.m-reps,.sethead.m-reps,.setrow.m-time,.sethead.m-time{grid-template-columns:34px 1fr 130px 46px}
+.setrow.m-cardio,.sethead.m-cardio{grid-template-columns:34px 1fr 64px 64px 46px}
+.sethead span:nth-child(n+3){text-align:center}
+
 .hero .go{white-space:nowrap;padding:0 16px}
 .hero .body .pill{white-space:nowrap;padding:0 12px;font-size:14px}
 
@@ -538,6 +545,7 @@ const lastPerf=(key,ex)=>perfHistory(key,ex)[0]||null;
 function repRange(e){const m=String(e.reps||'').match(/(\d+)\s*[–-]\s*(\d+)/);if(m)return[+m[1],+m[2]];const n=parseInt(e.reps,10);return isNaN(n)?null:[n,n]}
 function stepFor(key){const eq=(LIBX[key]||{}).eq;return eq==='halter'?2:eq==='corpo'?0:2.5}
 function suggest(e,sesId){
+  if(typeof measureOf==='function'&&measureOf(e)!=='kgreps')return null;
   const key=exKey(e),lp=lastPerf(key,sesId);const rr=repRange(e);
   if(!lp)return null;
   const kgs=lp.sets.map(x=>x.kg).filter(x=>x!=null);const top=kgs.length?Math.max(...kgs):null;
@@ -559,6 +567,7 @@ const DAYNAME={fb:'Full Body',U:'Superiores (Upper)',L:'Inferiores (Lower)',P:'P
 function scheme(t,slot){
   const o=PROFILE.obj;
   if(t==='kt')return{sets:'3',reps:'30–45 s'};
+  if(t==='x')return{sets:'',reps:(PROFILE.cardio||20)+' min'};
   if(t==='k')return{sets:'3',reps:slot==='obl'?'12–15 por lado':'12–15'};
   const comp=t==='c';
   const M={recomp:comp?['3','8–12']:['2','10–15'],hiper:comp?['3','6–10']:['3','10–15'],forca:comp?['4','4–6']:['2','8–12'],cond:comp?['3','12–15']:['2','15–20'],manut:comp?['2','8–12']:['2','10–15']}[o]||['3','8–12'];
@@ -955,7 +964,7 @@ function renderSession(s){
   const rows=s.ex.map((e,i)=>{const d=doneCount(e),full=isExDone(e);
     return `<div class="ex stag ${full?'done':''}" style="--i:${i}" data-ex="${e.id}" role="button" tabindex="0"><span class="num">${i+1}</span>${thumbHTML(e.img)}
       <div class="grow"><div class="nm">${esc(e.name)}</div><div class="det">${esc(detail(e))}${d&&!full?` <span style="color:var(--muted);font-size:15px">· ${d}/${setsN(e)}</span>`:''}</div>
-      ${full&&e.log.some(x=>x.kg!=null)?`<div class="note">${e.log.filter(x=>x.done).map(x=>(x.kg!=null?fmtKg(x.kg):'—')+(x.reps!=null?'×'+x.reps:'')).join(' · ')}</div>`:e.note?`<div class="note">${esc(e.note)}</div>`:''}</div>${full?'':`<span class="chev">${I.chev}</span>`}</div>`}).join('');
+      ${full&&e.log.some(x=>x.kg!=null||x.reps!=null||x.sec!=null||x.min!=null)?`<div class="note">${fmtLog(e)}</div>`:e.note?`<div class="note">${esc(e.note)}</div>`:''}</div>${full?'':`<span class="chev">${I.chev}</span>`}</div>`}).join('');
   const dn=sesDone(s);
   app.innerHTML=`<div class="top sticky"><button class="rbtn glass" id="back" aria-label="Voltar">${I.back}</button>
     <div style="display:flex;gap:8px"><label class="pill glass datepill">📅 ${dLabel(s.d)}<input type="date" id="sDate" value="${s.d}" max="${today()}"></label><button class="rbtn glass" id="smenu" aria-label="Opções do treino">${I.more}</button></div></div>
@@ -1001,43 +1010,69 @@ function addExToSession(s){
 }
 
 /* ---------- tela da série (tabela estilo Strong/Hevy) ---------- */
+/* ---------- tipo de medida por exercício ---------- */
+const MEASK='meutreino-measure';
+const MEASURES={kgreps:'Carga + reps',reps:'Só reps',time:'Tempo',cardio:'Cardio'};
+function defMeasure(e){
+  const k=exKey(e),L=LIBX[k],r=String(e.reps||'');
+  const saved=ls(MEASK,{})[k];if(saved)return saved;
+  if(L){if(L.t==='x')return'cardio';if(L.t==='kt')return'time';if(L.t==='k'&&L.eq==='corpo')return'reps'}
+  if(/min/.test(r)&&!(parseInt(e.sets,10)>0))return'cardio';
+  if(/\d\s*s\b|seg/.test(r))return'time';
+  return'kgreps';
+}
+const measureOf=e=>e.measure||defMeasure(e);
+function fmtSet(x,m){
+  if(!x)return'—';
+  if(m==='cardio')return [x.min!=null?fmtKg(x.min)+' min':null,x.km!=null?fmtKg(x.km)+' km':null].filter(Boolean).join(' · ')||'feito';
+  if(m==='time')return x.sec!=null?x.sec+'s':'feito';
+  if(m==='reps')return (x.reps!=null?x.reps+' reps':'feito')+(x.kg?` (${fmtKg(x.kg)}kg)`:'');
+  return `${x.kg!=null?fmtKg(x.kg):'—'}${x.reps!=null?'×'+x.reps:''}`;
+}
+const fmtLog=e=>e.log.filter(x=>x&&x.done).map(x=>fmtSet(x,measureOf(e))).join(' · ');
 function openSet(s,e){
-  const idx=s.ex.indexOf(e);const cardio=isCardio(e),timed=isTimed(e);
-  const sg=suggest(e,s.id);const lp=lastPerf(exKey(e),s.id);
+  const idx=s.ex.indexOf(e);
+  const lp=lastPerf(exKey(e),s.id);
   const draw=()=>{
-    const n=Math.max(setsN(e),e.log.length);while(e.log.length<n)e.log.push({kg:null,reps:null,done:false});
-    const src=imgSrcs(e.img);
-    const unitR=cardio?'min':timed?'seg':'reps';
-    const rows=e.log.map((x,i)=>{const pv=lp&&lp.sets[i];const prev=pv?`${pv.kg!=null?fmtKg(pv.kg):'—'}${pv.reps!=null?'×'+pv.reps:''}`:'—';
-      const phKg=sg&&sg.kg!=null?fmtKg(sg.kg):'kg';const rr=repRange(e);const phR=rr?String(rr[1]):'';
-      return `<div class="setrow ${x.done?'on':''}" data-i="${i}"><span class="sn">${i+1}</span><span class="pv">${prev}</span>
-        ${cardio?'<span></span>':`<input class="kg" inputmode="decimal" value="${x.kg!=null?fmtKg(x.kg):''}" placeholder="${phKg}" aria-label="Carga série ${i+1}">`}
-        <input class="rp" inputmode="numeric" value="${x.reps!=null?x.reps:''}" placeholder="${cardio?(parseInt(e.reps,10)||''):phR}" aria-label="${unitR} série ${i+1}">
-        <button class="ck" aria-label="Concluir série ${i+1}">✓</button></div>`}).join('');
+    const m=measureOf(e);const isC=m==='cardio';
+    const n=Math.max(isC?1:setsN(e),e.log.length);while(e.log.length<n)e.log.push({kg:null,reps:null,done:false});
+    const sg=m==='kgreps'?suggest(e,s.id):null;
+    const src=imgSrcs(e.img);const rr=repRange(e);
+    const rows=e.log.map((x,i)=>{const pv=lp&&lp.sets[i];const prev=pv?fmtSet(pv,m):'—';
+      const inp=(cls,val,ph,lab,mode)=>`<input class="${cls}" inputmode="${mode||'decimal'}" value="${val!=null?fmtKg(val):''}" placeholder="${ph}" aria-label="${lab} série ${i+1}">`;
+      let mid;
+      if(m==='kgreps')mid=inp('kg',x.kg,sg&&sg.kg!=null?fmtKg(sg.kg):'kg','Carga')+inp('rp',x.reps,rr?String(rr[1]):'reps','Repetições','numeric');
+      else if(m==='reps')mid=inp('rp wide',x.reps,rr?String(rr[1]):'reps','Repetições','numeric');
+      else if(m==='time')mid=inp('sec wide',x.sec,rr?String(rr[1]):'seg','Segundos','numeric');
+      else mid=inp('min',x.min,parseInt(e.reps,10)||'min','Minutos')+inp('km',x.km,'km','Distância');
+      return `<div class="setrow m-${m} ${x.done?'on':''}" data-i="${i}"><span class="sn">${isC?'🏃':i+1}</span><span class="pv">${prev}</span>${mid}<button class="ck" aria-label="Concluir ${i+1}">✓</button></div>`}).join('');
+    const head={kgreps:['kg','reps'],reps:['reps'],time:['segundos'],cardio:['min','km']}[m];
     const nextEx=s.ex.slice(idx+1).find(x=>!isExDone(x))||s.ex.find(x=>!isExDone(x)&&x!==e);
+    const chip=isC?`<span class="chip"><b>${esc(e.reps||'')}</b></span>`:`${e.sets?`<span class="chip"><b>${esc(e.sets)}</b> séries</span>`:''}<span class="chip"><b>${esc(e.reps)}</b>${m==='time'?'':' reps'}</span><span class="chip"><b>${getRest()}s</b> descanso</span>`;
     openSheet(`<div class="shead"><button class="rbtn" id="sClose" aria-label="Fechar">${I.x}</button><span class="t">${idx+1} de ${s.ex.length}</span>${e.slot&&e.slot!=='cardio'?`<button class="pill ghost" id="sSwap">🔀 Trocar</button>`:'<span style="width:44px"></span>'}</div>
       ${src.length?`<div class="bigimg ${src.length>1?'anim':''}"><img src="${src[0]}" alt="${esc(e.name)}">${src[1]?`<img class="f2" src="${src[1]}" alt="">`:''}</div>`:''}
       <div class="dname">${esc(e.name)}</div>
-      <div class="chips">${e.sets?`<span class="chip"><b>${esc(e.sets)}</b> séries</span>`:''}<span class="chip"><b>${esc(e.reps)}</b>${e.sets&&!timed?' reps':''}</span>${e.sets?`<span class="chip"><b>${getRest()}s</b> descanso</span>`:''}${e.note?`<span class="chip">${esc(e.note)}</span>`:''}</div>
+      <div class="chips">${chip}${e.note?`<span class="chip">${esc(e.note)}</span>`:''}</div>
       ${sg?`<div class="tip ${sg.up?'up':''}">${sg.up?'📈':'💡'} ${esc(sg.msg)}</div>`:''}
-      <div class="sethead"><span>Série</span><span>Anterior</span><span>${cardio?'':'kg'}</span><span>${unitR}</span><span></span></div>
+      <div class="mseg">${Object.entries(MEASURES).map(([k,v])=>`<button class="${k===m?'on':''}" data-m="${k}">${v}</button>`).join('')}</div>
+      <div class="sethead m-${m}"><span>${isC?'':'Série'}</span><span>Anterior</span>${head.map(h=>`<span>${h}</span>`).join('')}<span></span></div>
       <div class="sets2">${rows}</div>
-      ${cardio?'':`<button class="linkbtn" id="addSet" style="margin-top:6px">+ Adicionar série</button>`}
+      ${isC?'':`<button class="linkbtn" id="addSet" style="margin-top:6px">+ Adicionar série</button>`}
       ${isExDone(e)?(nextEx?`<button class="bigcta" id="nextEx">Próximo: ${esc(nextEx.name)} →</button>`:`<button class="bigcta" id="toList">Ver treino</button>`):''}`);
     const q=id=>document.getElementById(id);
     q('sClose').onclick=closeSheet;
     if(q('sSwap'))q('sSwap').onclick=()=>swapSheet(e,k=>{const ne=swapIn(s.ex,idx,k);saveSes();render();openSet(s,ne)});
+    sheet.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const v=b.dataset.m;e.measure=v;const mm=ls(MEASK,{});mm[exKey(e)]=v;ss(MEASK,mm);
+      if(v==='cardio'){e.log=e.log.slice(0,1)}saveSes();render();draw()});
     sheet.querySelectorAll('.setrow').forEach(row=>{const i=+row.dataset.i,x=e.log[i];
-      const kgI=row.querySelector('.kg'),rpI=row.querySelector('.rp');
-      if(kgI)kgI.onchange=()=>{x.kg=num(kgI.value);saveSes()};
-      rpI.onchange=()=>{x.reps=num(rpI.value);saveSes()};
+      const F={kg:row.querySelector('.kg'),reps:row.querySelector('.rp'),sec:row.querySelector('.sec'),min:row.querySelector('.min'),km:row.querySelector('.km')};
+      Object.entries(F).forEach(([k,el])=>{if(el)el.onchange=()=>{x[k]=num(el.value);saveSes()}});
       row.querySelector('.ck').onclick=()=>{
-        if(!x.done){if(kgI&&x.kg==null)x.kg=num(kgI.value)??num(kgI.placeholder);if(x.reps==null)x.reps=num(rpI.value)??num(rpI.placeholder);
-          // propaga carga para próximas séries vazias
+        if(!x.done){
+          Object.entries(F).forEach(([k,el])=>{if(el&&x[k]==null){const v=num(el.value);x[k]=v!=null?v:(k==='km'?null:num(el.placeholder))}});
           if(x.kg!=null)e.log.slice(i+1).forEach(y=>{if(!y.done&&y.kg==null)y.kg=x.kg});
-          x.done=true;if(navigator.vibrate)navigator.vibrate(30);
-          saveSes();render();draw();
-          if(!cardio&&e.sets){const remaining=e.log.filter(y=>!y.done).length;if(remaining)startRest(`Série ${i+2} de ${e.log.length} · ${e.name}`);else if(nextEx)startRest(`Próximo: ${nextEx.name}`)}
+          x.done=true;if(navigator.vibrate)navigator.vibrate(30);saveSes();render();draw();
+          if(!isC){const remaining=e.log.filter(y=>!y.done).length;if(remaining)startRest(`Série ${i+2} de ${e.log.length} · ${e.name}`);else if(nextEx)startRest(`Próximo: ${nextEx.name}`)}
         }else{x.done=false;saveSes();render();draw()}};
     });
     if(q('addSet'))q('addSet').onclick=()=>{const last=e.log[e.log.length-1];e.log.push({kg:last?last.kg:null,reps:null,done:false});e.sets=String(e.log.length);saveSes();render();draw()};
@@ -1148,7 +1183,7 @@ function dayChooser(k){
   sheet.querySelectorAll('[data-s2]').forEach(b=>b.onclick=()=>histSheet(S(b.dataset.s2)));
 }
 function histSheet(s){
-  const rows=s.ex.map(e=>`<div class="lrow"><b style="font-weight:600">${esc(e.name)}</b><span>${doneCount(e)?e.log.filter(x=>x.done).map(x=>(x.kg!=null?fmtKg(x.kg):'—')+(x.reps!=null?'×'+x.reps:'')).join(' · '):'não feito'}</span></div>`).join('');
+  const rows=s.ex.map(e=>`<div class="lrow"><b style="font-weight:600">${esc(e.name)}</b><span>${doneCount(e)?fmtLog(e):'não feito'}</span></div>`).join('');
   openSheet(`<div class="shead"><button class="rbtn" id="hX" aria-label="Fechar">${I.x}</button><span class="t">${dLabel(s.d)}</span><span style="width:44px"></span></div>
     <div class="dname" style="margin-top:4px">${esc(s.title)}</div>
     <label class="fld"><span>Data do treino</span><input type="date" id="hD" value="${s.d}" max="${today()}"></label>
@@ -1202,7 +1237,7 @@ function renderProfile(){
     <div class="mlist">${mi('pClaude',IC.claude,'#D97757','Conversar com o Claude','Copia seu perfil, fichas e histórico e abre o Claude')}${mi('pShare',IC.share,'#00ACC1','Compartilhar fichas','Enviar por WhatsApp, mensagem…')}</div>
     <div class="lbl">Dados e conta</div>
     <div class="mlist">${mi('pReset',IC.reset,'#E53935','Restaurar fichas originais','Não apaga seu histórico','','red')}${AUTH?mi('pOut',IC.trash,'#E53935','Sair deste aparelho','Seus dados continuam na nuvem','','red'):''}</div>
-    <p class="foot">Meu Treino · v8 · ${AUTH?'dados sincronizados com sua conta':'dados salvos só neste aparelho'}</p>`;
+    <p class="foot">Meu Treino · v8.1 · ${AUTH?'dados sincronizados com sua conta':'dados salvos só neste aparelho'}</p>`;
   const q=id=>document.getElementById(id);const rr=()=>{animOn=false;render();animOn=true};
   const bindSeg=(id,f)=>q(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{f(b.dataset.v);saveProfile();rr()});
   bindSeg('pVary',v=>P.vary=v==='on');bindSeg('pObj',v=>P.obj=v);bindSeg('pSplit',v=>P.split=v);
@@ -1258,7 +1293,7 @@ MINHAS FICHAS
 ${planText(plan.routines)}
 
 ÚLTIMOS TREINOS (carga×reps por série)
-${recent.map(s=>`${s.d} — ${s.title}: `+s.ex.filter(e=>doneCount(e)).map(e=>`${e.name} ${e.log.filter(x=>x.done).map(x=>(x.kg!=null?fmtKg(x.kg):'—')+(x.reps!=null?'×'+x.reps:'')).join('/')}`).join('; ')).join('\n')||'nenhum ainda'}
+${recent.map(s=>`${s.d} — ${s.title}: `+s.ex.filter(e=>doneCount(e)).map(e=>`${e.name} ${fmtLog(e)}`).join('; ')).join('\n')||'nenhum ainda'}
 ${MED.length?`\nMEDIDAS (mais recente): ${Object.entries(MED[MED.length-1]).map(([k,v])=>k+': '+v).join(', ')}`:''}
 
 Minha pergunta: `;
