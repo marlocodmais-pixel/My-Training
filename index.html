@@ -283,7 +283,7 @@ button:active{transform:scale(.97)}
 .calhead button{width:36px;height:36px;border-radius:50%;background:var(--card2);display:grid;place-items:center}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
 .cal .h{font-size:11px;color:var(--muted);font-weight:600;padding-bottom:2px}
-.cal .c{aspect-ratio:1;border-radius:12px;display:grid;place-items:center;font-size:14px;color:var(--muted);background:rgba(255,255,255,.025)}
+.cal .c{width:100%;font:inherit;border:0;aspect-ratio:1;border-radius:12px;display:grid;place-items:center;font-size:14px;color:var(--muted);background:rgba(255,255,255,.025)}
 .cal .c.on{background:var(--lime);color:var(--ink);font-weight:700}
 .cal .c.t{box-shadow:inset 0 0 0 2px var(--lime);color:var(--text)}
 .cal .c.on.t{box-shadow:none}
@@ -361,11 +361,24 @@ button:active{transform:scale(.97)}
 .hint{font-size:13.5px;line-height:1.4;margin:8px 4px 0}
 .ex .cb{font-size:17px}
 .hero[role=button]{cursor:pointer}
+.login{min-height:calc(100vh - 80px);display:flex;flex-direction:column;justify-content:center;padding:20px 0 40px}
+.llogo{width:88px;height:88px;margin:0 auto 8px;display:block;filter:drop-shadow(0 10px 30px rgba(184,255,44,.25))}
+.remember{display:flex;align-items:center;gap:10px;margin:6px 4px 4px;font-size:15px}
+.remember input{width:22px;height:22px;accent-color:#B8FF2C}
+.acct{display:flex;align-items:center;gap:12px;margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:12px 14px}
+.acct .av{width:44px;height:44px;border-radius:50%;background:var(--lime);color:var(--ink);display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:22px;flex:none}
+.acct b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis}
+.acct small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.acct .grow{min-width:0}
+
+.cal .c:disabled{opacity:.35}
+.calhint{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px}
 .donebar{margin-top:16px;background:rgba(184,255,44,.1);border:1px solid rgba(184,255,44,.3);border-radius:18px;padding:12px 14px;font-size:14.5px;color:var(--text)}
 .donebar b{color:var(--lime)}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="lgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4FF8A"/><stop offset=".55" stop-color="#B8FF2C"/><stop offset="1" stop-color="#6FB800"/></linearGradient><linearGradient id="lgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E3A40"/><stop offset="1" stop-color="#0A1A1D"/></linearGradient></defs><symbol id="logoSym" viewBox="0 0 120 120"><rect x="4" y="4" width="112" height="112" rx="30" fill="url(#lgB)"/><g fill="url(#lgA)"><rect x="36" y="55" width="48" height="10" rx="3"/><rect x="28" y="34" width="12" height="52" rx="5"/><rect x="80" y="34" width="12" height="52" rx="5"/><rect x="19" y="43" width="9" height="34" rx="4"/><rect x="92" y="43" width="9" height="34" rx="4"/></g></symbol></svg>
 <div id="splash"><svg class="logo" viewBox="0 0 120 120" aria-hidden="true"><defs>
 <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4FF8A"/><stop offset=".55" stop-color="#B8FF2C"/><stop offset="1" stop-color="#6FB800"/></linearGradient>
 <linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E3A40"/><stop offset="1" stop-color="#0A1A1D"/></linearGradient>
@@ -454,9 +467,9 @@ const isCardio=e=>!(parseInt(e.sets,10)>0)&&/min/.test(String(e.reps||''));
 let plan=null, PROFILE=null, SES=[], MED=[];
 const PK='meutreino-plan',PRK='meutreino-profile',SK='meutreino-sessions',MK='meutreino-medidas',GK='meutreino-goal',RK='meutreino-rest',PVK='meutreino-preview';
 const DEFPROFILE={mode:'gen',obj:'recomp',split:'fb',freq:5,min:75,equip:['maq','cabo','halter','barra','corpo'],avoid:['Stiff-Legged_Barbell_Deadlift'],focus:['core','trap','glute'],cardio:20,cardioKey:'Walking_Treadmill'};
-const saveSes=()=>ss(SK,SES), savePlan=()=>ss(PK,plan), saveProfile=()=>ss(PRK,PROFILE), saveMed=()=>ss(MK,MED);
-const getGoal=()=>ls(GK,PROFILE?PROFILE.freq:5);const setGoal=v=>{ss(GK,v);PROFILE.freq=v;saveProfile()};
-const getRest=()=>ls(RK,90);const setRestPref=v=>ss(RK,Math.max(15,Math.min(600,v)));
+const saveSes=()=>{ss(SK,SES);markDirty()}, savePlan=()=>{ss(PK,plan);markDirty()}, saveProfile=()=>{ss(PRK,PROFILE);markDirty()}, saveMed=()=>{ss(MK,MED);markDirty()};
+const getGoal=()=>ls(GK,PROFILE?PROFILE.freq:5);const setGoal=v=>{ss(GK,v);markDirty();PROFILE.freq=v;saveProfile()};
+const getRest=()=>ls(RK,90);const setRestPref=v=>{ss(RK,Math.max(15,Math.min(600,v)));markDirty()};
 const R=id=>plan.routines.find(r=>r.id===id);
 const S=id=>SES.find(s=>s.id===id);
 const openSes=()=>SES.find(s=>!s.closed);
@@ -487,11 +500,11 @@ function migrate(){
         const ex=items.map(([id,L])=>{const src=byId[id]?byId[id].e:{name:L.n,sets:String(L.kg.length),reps:''};
           return {id:nid(),key:exKey(src),name:L.n||src.name,img:src.img,sets:src.sets||String(L.kg.length),reps:src.reps,note:src.note||'',log:L.kg.map(k=>({kg:k||null,reps:null,done:true}))}});
         SES.push({id:nid(),d,kind:'ficha',rid,title:r?r.name:'Treino',ex,start:pd(d).getTime(),end:pd(d).getTime(),closed:true})})});
-    saveSes();
+    ss(SK,SES);
   }
   // fecha sessões abertas de dias anteriores; descarta vazias
   SES=SES.filter(s=>{if(!s.closed&&s.d<today()){if(!s.ex.some(e=>doneCount(e)))return false;s.closed=true;s.end=s.end||s.start}return true});
-  saveSes();savePlan();saveProfile();
+  ss(SK,SES);ss(PK,plan);ss(PRK,PROFILE);
 }
 
 /* ================= histórico / progressão ================= */
@@ -590,11 +603,122 @@ function getPreview(force){
 }
 function swapIn(list,idx,newKey){const old=list[idx];const L=LIBX[newKey];const e=mkEx(L);e.id=old.id;e.acc=old.acc;e.log=old.log?[]:undefined;if(old.log)e.log=[];list[idx]=e;return e}
 
+
+/* ================= CONTA + NUVEM (Supabase) ================= */
+const SB_URL='https://vhzkmhpedtqkvigciciv.supabase.co';
+const SB_KEY='sb_publishable_P2Q_qxn8UZGjnGg4qFfQKw_F0e37gm7';
+const AK='meutreino-auth',DK='meutreino-dirty',TK='meutreino-ts',SYK='meutreino-synced',OWK='meutreino-owner',DELK='meutreino-del',GUK='meutreino-guest';
+let AUTH=null,syncState='idle',syncT=null,lastSyncAt=null;
+function loadAuth(){try{AUTH=JSON.parse(localStorage.getItem(AK)||sessionStorage.getItem(AK)||'null')}catch(e){AUTH=null}}
+function storeAuth(a,remember){AUTH=a;try{localStorage.removeItem(AK);sessionStorage.removeItem(AK);(remember?localStorage:sessionStorage).setItem(AK,JSON.stringify(a))}catch(e){}}
+function rememberOn(){try{return !!localStorage.getItem(AK)}catch(e){return true}}
+async function sbFetch(path,opt={},auth=true){
+  const h=Object.assign({'apikey':SB_KEY,'Content-Type':'application/json'},opt.headers||{});
+  if(auth&&AUTH)h.Authorization='Bearer '+AUTH.access_token;
+  const r=await fetch(SB_URL+path,Object.assign({},opt,{headers:h}));
+  let j=null;try{j=await r.json()}catch(e){}
+  if(!r.ok){const m=(j&&(j.msg||j.message||j.error_description||j.error))||('Erro '+r.status);const err=new Error(m);err.status=r.status;throw err}
+  return j;
+}
+const authFrom=(j,prev)=>({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Date.now()+((j.expires_in||3600)-60)*1000,user:{id:(j.user||prev.user).id,email:(j.user||prev.user).email}});
+async function sendCode(email){await sbFetch('/auth/v1/otp',{method:'POST',body:JSON.stringify({email,create_user:true})},false)}
+async function verifyCode(email,token,remember){const j=await sbFetch('/auth/v1/verify',{method:'POST',body:JSON.stringify({type:'email',email,token})},false);storeAuth(authFrom(j,{}),remember)}
+async function ensureToken(){
+  if(!AUTH)return false;if(Date.now()<AUTH.expires_at)return true;
+  try{const j=await sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:AUTH.refresh_token})},false);storeAuth(authFrom(j,AUTH),rememberOn());return true}
+  catch(e){if(e.status===400||e.status===401){toast('Sessão expirada, entre de novo');await signOut(true)}return false}
+}
+function wipeLocal(){[PK,PRK,SK,MK,GK,RK,PVK,DK,TK,SYK,OWK,DELK,'meutreino-log','meutreino-hist','meutreino-prog','meutreino-medidas'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}})}
+async function signOut(silent){
+  try{if(AUTH&&navigator.onLine)await sbFetch('/auth/v1/logout',{method:'POST'})}catch(e){}
+  AUTH=null;try{localStorage.removeItem(AK);sessionStorage.removeItem(AK)}catch(e){}
+  wipeLocal();migrate();view={name:'home'};tab='home';render();if(!silent)toast('Você saiu deste aparelho');
+}
+/* ---- pacote de dados ---- */
+const getDel=()=>ls(DELK,[]);
+function delSes(s){const i=SES.indexOf(s);if(i>=0)SES.splice(i,1);const d=getDel();if(!d.includes(s.id)){d.push(s.id);ss(DELK,d.slice(-500))}}
+function markDirty(){try{localStorage.setItem(DK,'1');localStorage.setItem(TK,String(Date.now()))}catch(e){}clearTimeout(syncT);syncT=setTimeout(()=>sync(),2500)}
+function bundle(){return{v:7,plan,profile:PROFILE,ses:SES,med:MED,goal:ls(GK,null),rest:ls(RK,null),del:getDel(),ts:+(localStorage.getItem(TK)||0)}}
+function applyBundle(b){
+  if(b.plan)plan=b.plan;if(b.profile)PROFILE=Object.assign({},DEFPROFILE,b.profile);SES=b.ses||[];MED=b.med||[];
+  ss(PK,plan);ss(PRK,PROFILE);ss(SK,SES);ss(MK,MED);if(b.goal!=null)ss(GK,b.goal);if(b.rest!=null)ss(RK,b.rest);ss(DELK,b.del||[]);
+}
+function mergeBundles(L,Rm){
+  const del=[...new Set([...(L.del||[]),...(Rm.del||[])])];const newer=(L.ts||0)>=(Rm.ts||0)?L:Rm,older=newer===L?Rm:L;
+  const map=new Map();(older.ses||[]).forEach(s=>map.set(s.id,s));(newer.ses||[]).forEach(s=>map.set(s.id,s));
+  return{v:7,plan:newer.plan||older.plan,profile:newer.profile||older.profile,med:(newer.med&&newer.med.length?newer.med:older.med)||[],goal:newer.goal??older.goal,rest:newer.rest??older.rest,
+    ses:[...map.values()].filter(s=>!del.includes(s.id)),del:del.slice(-500),ts:Math.max(L.ts||0,Rm.ts||0)};
+}
+async function pushBundle(b){
+  const now=new Date().toISOString();
+  await sbFetch('/rest/v1/user_data?on_conflict=user_id',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:AUTH.user.id,data:b,updated_at:now})});
+  ss(SYK,now);localStorage.removeItem(DK);
+}
+async function sync(opts={}){
+  if(!AUTH||syncState==='busy')return;if(!navigator.onLine){syncState='offline';updSync();return}
+  syncState='busy';updSync();
+  try{
+    if(!await ensureToken()){syncState='idle';return}
+    const rows=await sbFetch('/rest/v1/user_data?select=data,updated_at');const remote=rows&&rows[0];
+    const dirty=!!localStorage.getItem(DK);const synced=ls(SYK,null);
+    if(!remote){await pushBundle(bundle())}
+    else if(!dirty){if(remote.updated_at!==synced){applyBundle(remote.data);ss(SYK,remote.updated_at);if(!opts.quiet){animOn=false;render();animOn=true}}}
+    else{const m=mergeBundles(bundle(),remote.data);applyBundle(m);await pushBundle(m);if(!opts.quiet){animOn=false;render();animOn=true}}
+    syncState='ok';lastSyncAt=Date.now();
+  }catch(e){syncState='err';console.warn(e)}
+  updSync();
+}
+function updSync(){const el=document.getElementById('syncLine');if(el)el.innerHTML=syncText()}
+function syncText(){
+  if(!AUTH)return'Não conectado';
+  if(syncState==='busy')return'⟳ Sincronizando…';if(syncState==='offline')return'Sem internet · salvo neste aparelho';
+  if(syncState==='err')return'⚠️ Falha ao sincronizar · tentaremos de novo';
+  if(localStorage.getItem(DK))return'Alterações pendentes…';
+  return lastSyncAt?'✓ Sincronizado':'✓ Na nuvem';
+}
+/* ---- tela de login ---- */
+let loginStep='email',loginEmail='',loginBusy=false;
+function renderLogin(){
+  tabbar.hidden=true;cta.hidden=true;
+  app.innerHTML=`<div class="login">
+    <svg class="llogo" viewBox="0 0 120 120" aria-hidden="true"><use href="#logoSym"/></svg>
+    <h1 class="ttl" style="text-align:center">Meu <em>Treino</em></h1>
+    <p class="muted" style="text-align:center;margin:0 0 26px">${loginStep==='email'?'Entre para salvar seus treinos na nuvem e acessar de qualquer aparelho.':`Enviamos um código para <b style="color:var(--text)">${esc(loginEmail)}</b>. Digite abaixo.`}</p>
+    ${loginStep==='email'?`
+      <label class="fld"><span>Seu e-mail</span><input id="lgEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="voce@gmail.com" value="${esc(loginEmail)}"></label>
+      <button class="bigcta" id="lgSend">${loginBusy?'Enviando…':'Enviar código'}</button>`:`
+      <label class="fld"><span>Código de verificação</span><input id="lgCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••" style="font-family:var(--disp);font-size:30px;letter-spacing:.3em;text-align:center"></label>
+      <label class="remember"><input type="checkbox" id="lgRem" checked><span>Lembrar este aparelho</span></label>
+      <button class="bigcta" id="lgGo">${loginBusy?'Verificando…':'Entrar'}</button>
+      <button class="linkbtn" id="lgBack">Usar outro e-mail / reenviar código</button>`}
+    <p class="foot" style="margin-top:22px">Sem senha: a cada novo aparelho você confirma com um código no e-mail.<br>Em aparelho de outra pessoa, desmarque "Lembrar".</p>
+    <button class="linkbtn" id="lgGuest" style="margin-top:4px">Continuar sem conta (só neste aparelho)</button>
+  </div>`;
+  const q=id=>document.getElementById(id);
+  if(q('lgSend')){const go=async()=>{const e=q('lgEmail').value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(e)){toast('Digite um e-mail válido');return}
+      loginEmail=e;loginBusy=true;renderLogin();
+      try{await sendCode(e);loginStep='code';toast('Código enviado!')}catch(err){toast(/rate|limit|seconds/i.test(err.message)?'Muitas tentativas, aguarde um pouco':'Não deu para enviar: '+err.message)}
+      loginBusy=false;renderLogin();setTimeout(()=>{const c=q('lgCode');if(c)c.focus()},100)};
+    q('lgSend').onclick=go;q('lgEmail').onkeydown=ev=>{if(ev.key==='Enter')go()}}
+  if(q('lgGo')){const go=async()=>{const c=q('lgCode').value.replace(/\D/g,'');if(c.length<6){toast('Digite o código completo');return}
+      loginBusy=true;const rem=q('lgRem').checked;renderLogin();
+      try{await verifyCode(loginEmail,c,rem);
+        const owner=ls(OWK,null);if(owner&&owner!==AUTH.user.id){wipeLocal();migrate()}
+        ss(OWK,AUTH.user.id);localStorage.removeItem(GUK);loginStep='email';loginBusy=false;
+        toast('Bem-vindo! 💪');view={name:'home'};tab='home';render();await sync();
+      }catch(err){loginBusy=false;renderLogin();toast(/expired|invalid/i.test(err.message)?'Código inválido ou expirado':'Erro: '+err.message)}};
+    q('lgGo').onclick=go;q('lgCode').oninput=ev=>{const v=ev.target.value.replace(/\D/g,'');if(v.length>=6&&v.length===ev.target.maxLength)go()};
+    q('lgBack').onclick=()=>{loginStep='email';renderLogin()}}
+  q('lgGuest').onclick=()=>{try{localStorage.setItem(GUK,'1')}catch(e){}render()};
+}
+const isGuest=()=>{try{return !!localStorage.getItem(GUK)}catch(e){return false}};
+
 /* ================= UI base ================= */
 let view={name:'home'}, tab='home', editing=false;
 const app=document.getElementById('app'),cta=document.getElementById('cta'),ctaBtn=document.getElementById('ctaBtn'),tabbar=document.getElementById('tabbar');
 let lastKey='',animOn=true;
 function render(){
+  if(!AUTH&&!isGuest()){lastKey='login';return renderLogin()}
   const key=view.name==='home'?'tab:'+tab:view.name+':'+view.id;
   const anim=key!==lastKey&&animOn;const from=lastKey;lastKey=key;
   app.classList.remove('enter-r','enter-l','enter-f','noanim');void app.offsetWidth;
@@ -625,7 +749,7 @@ function startSession(src,d){
   SES.push(s);saveSes();if(src.kind==='gen')localStorage.removeItem(PVK);
   go({name:'session',id:s.id});
 }
-function closeSession(s,silent){s.closed=true;s.end=Date.now();if(!s.ex.some(e=>doneCount(e))){SES.splice(SES.indexOf(s),1)}saveSes();if(!silent)render()}
+function closeSession(s,silent){s.closed=true;s.end=Date.now();if(!s.ex.some(e=>doneCount(e))){delSes(s)}saveSes();if(!silent)render()}
 
 /* ================= HOME ================= */
 function renderHome(){
@@ -766,7 +890,7 @@ function sessionMenu(s){
   q('smAll').onclick=()=>{s.ex.forEach(e=>{const n=setsN(e);while(e.log.length<n)e.log.push({kg:null,reps:null,done:true});e.log.forEach(x=>x.done=true)});saveSes();closeSheet();render()};
   if(q('smSave'))q('smSave').onclick=()=>{const used=new Set(plan.routines.map(r=>r.letter));const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').find(c=>!used.has(c))||'★';
     plan.routines.push({id:nid(),letter:L,name:s.title,ex:s.ex.map(e=>({id:nid(),key:e.key,name:e.name,img:e.img,sets:e.sets,reps:e.reps,note:e.note}))});savePlan();closeSheet();toast('Salvo nas fichas')};
-  q('smDel').onclick=()=>{if(confirm(s.closed?'Excluir este treino do histórico?':'Descartar o treino em andamento?')){SES.splice(SES.indexOf(s),1);saveSes();closeSheet();go({name:'home'})}};
+  q('smDel').onclick=()=>{if(confirm(s.closed?'Excluir este treino do histórico?':'Descartar o treino em andamento?')){delSes(s);saveSes();closeSheet();go({name:'home'})}};
 }
 function addExToSession(s){
   const w={name:'',img:null,key:null};
@@ -841,8 +965,8 @@ function showSummary(s){
 }
 
 /* ---------- registrar treino passado ---------- */
-function logPastSheet(){
-  const y=new Date();y.setDate(y.getDate()-1);let d=dkey(y);let choice=null;
+function logPastSheet(pre){
+  const y=new Date();y.setDate(y.getDate()-1);let d=pre||dkey(y);let choice=null;
   const opts=[...plan.routines.map(r=>({id:r.id,label:r.name,sub:`${r.ex.length} exercícios`,src:{kind:'ficha',rid:r.id,title:r.name,ex:r.ex}}))];
   if(PROFILE.mode==='gen'){const pv=getPreview();opts.unshift({id:'__gen',label:pv.title+' (gerado)',sub:`${pv.ex.length} exercícios`,src:{kind:'gen',title:pv.title,dayType:pv.dayType,ex:pv.ex}})}
   const draw=()=>{openSheet(`<div class="shead"><button class="rbtn" id="lpX" aria-label="Fechar">${I.x}</button><span class="t">Registrar treino feito</span><span style="width:44px"></span></div>
@@ -852,7 +976,7 @@ function logPastSheet(){
     <button class="bigcta" id="lpQuick" ${choice?'':'disabled style="opacity:.4"'}>Salvar (tudo feito)</button>
     <button class="bigcta dark" id="lpDetail" ${choice?'':'disabled style="opacity:.4"'}>Lançar cargas série por série</button>`);
     const q=id=>document.getElementById(id);q('lpX').onclick=closeSheet;
-    q('lpD').onchange=ev=>{if(ev.target.value)d=ev.target.value};
+    q('lpD').onchange=ev=>{if(ev.target.value&&ev.target.value<=today())d=ev.target.value};
     sheet.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{choice=b.dataset.o;draw()});
     const mk=()=>{const o=opts.find(x=>x.id===choice);const s={id:nid(),d,kind:o.src.kind,rid:o.src.rid||null,dayType:o.src.dayType||null,title:o.src.title,
       ex:o.src.ex.map(e=>({id:nid(),key:exKey(e),name:e.name,img:e.img,sets:e.sets,reps:e.reps,note:e.note||'',slot:e.slot||(LIBX[exKey(e)]||{}).slot||'',log:[]})),start:pd(d).getTime(),end:pd(d).getTime(),closed:true};
@@ -880,7 +1004,7 @@ function renderEvo(){
   const sets=SES.filter(s=>s.d.slice(0,7)===cur).reduce((a,s)=>a+s.ex.reduce((b,e)=>b+doneCount(e),0),0);
   const base=new Date(now.getFullYear(),now.getMonth()+calOff,1);const first=base.getDay(),dim=new Date(base.getFullYear(),base.getMonth()+1,0).getDate();
   let cells=['D','S','T','Q','Q','S','S'].map(x=>`<div class="h">${x}</div>`).join('');for(let i=0;i<first;i++)cells+='<div></div>';
-  for(let d=1;d<=dim;d++){const k=dkey(new Date(base.getFullYear(),base.getMonth(),d));cells+=`<div class="c ${days.has(k)?'on':''} ${k===today()?'t':''}">${d}</div>`}
+  for(let d=1;d<=dim;d++){const k=dkey(new Date(base.getFullYear(),base.getMonth(),d));cells+=`<button class="c ${days.has(k)?'on':''} ${k===today()?'t':''}" data-cd="${k}" ${k>today()?'disabled':''} aria-label="${dLabel(k)}">${d}</button>`}
   const optsMap=new Map();sortedSes().forEach(s=>s.ex.forEach(e=>{if(e.log.some(x=>x.done&&x.kg))optsMap.set(exKey(e),e.name)}));const opts=[...optsMap.entries()];
   if(!evoKey||!optsMap.has(evoKey))evoKey=opts.length?opts[opts.length-1][0]:null;
   let chart='<p class="muted" style="margin:6px 2px 0">Lance a carga ao concluir as séries e a evolução aparece aqui.</p>';
@@ -896,7 +1020,7 @@ function renderEvo(){
     <h1 class="ttl">Evolu<em>ção</em></h1>
     <div class="stats stag" style="--i:1"><div class="stat"><b>${monthCount}</b><span>treinos no mês</span></div><div class="stat"><b>${sets}</b><span>séries no mês</span></div><div class="stat"><b>${days.size}</b><span>treinos no total</span></div></div>
     <div class="sec">Calendário</div>
-    <div class="box"><div class="calhead"><button id="calPrev" aria-label="Mês anterior">${I.back}</button><b>${MES[base.getMonth()]} ${base.getFullYear()}</b><button id="calNext" aria-label="Próximo mês" style="transform:scaleX(-1)">${I.back}</button></div><div class="cal">${cells}</div></div>
+    <div class="box"><div class="calhead"><button id="calPrev" aria-label="Mês anterior">${I.back}</button><b>${MES[base.getMonth()]} ${base.getFullYear()}</b><button id="calNext" aria-label="Próximo mês" style="transform:scaleX(-1)">${I.back}</button></div><div class="cal">${cells}</div><div class="calhint">Toque em um dia para ver ou registrar o treino</div></div>
     <div class="sec">Progresso de carga</div><div class="box">${chart}</div>
     <div class="sec">Medidas</div><div class="box">${medBox()}</div>
     <div class="sec">Prêmios <span style="color:var(--lime)">${bd.filter(b=>b[3]).length}/${bd.length}</span></div><div class="badges">${bd.map(b=>`<div class="bdg ${b[3]?'on':''}"><div class="e">${b[0]}</div><b>${b[1]}</b><small>${b[2]}</small></div>`).join('')}</div>
@@ -906,8 +1030,20 @@ function renderEvo(){
   q('calPrev').onclick=()=>{calOff--;animOn=false;render();animOn=true};q('calNext').onclick=()=>{calOff++;animOn=false;render();animOn=true};
   if(q('exSel'))q('exSel').onchange=()=>{evoKey=q('exSel').value;animOn=false;render();animOn=true};
   app.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>histSheet(S(b.dataset.s)));
+  app.querySelectorAll('[data-cd]').forEach(b=>b.onclick=()=>dayChooser(b.dataset.cd));
   app.querySelectorAll('[data-med]').forEach(b=>b.onclick=()=>{medSel=b.dataset.med;animOn=false;render();animOn=true});
   if(q('addMed'))q('addMed').onclick=openMedSheet;
+}
+function dayChooser(k){
+  const list=SES.filter(s=>s.d===k);
+  if(!list.length)return logPastSheet(k);
+  if(list.length===1)return histSheet(list[0]);
+  openSheet(`<div class="shead"><button class="rbtn" id="dcX" aria-label="Fechar">${I.x}</button><span class="t">${dLabel(k)}</span><span style="width:44px"></span></div>
+    <div class="list">${list.map(s=>`<button class="rcard" data-s2="${s.id}"><div class="grow"><div class="nm">${esc(s.title)}</div><div class="meta">${sesDone(s)} exercícios</div></div><span class="chev">${I.chev}</span></button>`).join('')}</div>
+    <button class="bigcta dark" id="dcAdd">+ Registrar outro treino neste dia</button>`);
+  document.getElementById('dcX').onclick=closeSheet;
+  document.getElementById('dcAdd').onclick=()=>logPastSheet(k);
+  sheet.querySelectorAll('[data-s2]').forEach(b=>b.onclick=()=>histSheet(S(b.dataset.s2)));
 }
 function histSheet(s){
   const rows=s.ex.map(e=>`<div class="lrow"><b style="font-weight:600">${esc(e.name)}</b><span>${doneCount(e)?e.log.filter(x=>x.done).map(x=>(x.kg!=null?fmtKg(x.kg):'—')+(x.reps!=null?'×'+x.reps:'')).join(' · '):'não feito'}</span></div>`).join('');
@@ -916,11 +1052,13 @@ function histSheet(s){
     <label class="fld"><span>Data do treino</span><input type="date" id="hD" value="${s.d}" max="${today()}"></label>
     <div class="box">${rows}</div>
     <button class="bigcta" id="hEdit">Editar séries e cargas</button>
+    <button class="bigcta dark" id="hAdd">+ Registrar outro treino neste dia</button>
     <button class="bigcta red" id="hDel">Excluir este treino</button>`);
   const q=id=>document.getElementById(id);q('hX').onclick=closeSheet;
   q('hD').onchange=ev=>{const v=ev.target.value;if(v&&v<=today()){s.d=v;saveSes();animOn=false;render();animOn=true;toast('Data alterada')}};
   q('hEdit').onclick=()=>{closeSheet();go({name:'session',id:s.id})};
-  q('hDel').onclick=()=>{if(confirm('Excluir este treino do histórico? Isso também ajusta qual é o próximo treino.')){SES.splice(SES.indexOf(s),1);saveSes();closeSheet();render();toast('Treino excluído')}};
+  q('hAdd').onclick=()=>logPastSheet(s.d);
+  q('hDel').onclick=()=>{if(confirm('Excluir este treino do histórico? Isso também ajusta qual é o próximo treino.')){delSes(s);saveSes();closeSheet();render();toast('Treino excluído')}};
 }
 function medBox(){
   const m=MEDS.find(x=>x[0]===medSel);const pts=MED.filter(x=>x[medSel]>0).map(x=>({d:x.d,kg:x[medSel]})).slice(-12);
@@ -938,6 +1076,8 @@ function renderProfile(){
   const P=PROFILE;
   app.innerHTML=`<div class="top"><span class="muted">Configuração do treino</span><span></span></div>
     <h1 class="ttl">Per<em>fil</em></h1>
+    <div class="acct">${AUTH?`<div class="av">${esc(AUTH.user.email[0].toUpperCase())}</div><div class="grow"><b>${esc(AUTH.user.email)}</b><small id="syncLine">${syncText()}</small></div><button class="pill glass" id="pSync" style="height:36px;padding:0 12px;font-size:13px">Sincronizar</button>`
+      :`<div class="av">?</div><div class="grow"><b>Sem conta</b><small>Dados salvos só neste aparelho</small></div><button class="pill lime" id="pLogin" style="height:36px;padding:0 14px;font-size:13px">Entrar</button>`}</div>
     <div class="lbl">Como montar o treino do dia</div>
     ${seg('pMode',{gen:'🤖 Gerador automático',fichas:'📋 Minhas fichas'},P.mode)}
     <p class="muted hint">${P.mode==='gen'?'O app monta um treino novo a cada dia, variando exercícios equivalentes e respeitando seu objetivo e divisão.':'O app segue suas fichas na ordem (A → B → C…), a partir do último treino registrado.'}</p>
@@ -957,9 +1097,9 @@ function renderProfile(){
     <div class="mlist">${mi('pAvoid',IC.trash,'#546E7A','Evitar exercícios',P.avoid.length?P.avoid.map(k=>LIBX[k]?LIBX[k].n:k).slice(0,3).join(', ')+(P.avoid.length>3?'…':''):'Nenhum',P.avoid.length?String(P.avoid.length):'')}</div>
     <div class="lbl">Claude</div>
     <div class="mlist">${mi('pClaude',IC.claude,'#D97757','Conversar com o Claude','Copia seu perfil, fichas e histórico e abre o Claude')}${mi('pShare',IC.share,'#00ACC1','Compartilhar fichas','Enviar por WhatsApp, mensagem…')}</div>
-    <div class="lbl">Dados</div>
-    <div class="mlist">${mi('pReset',IC.reset,'#E53935','Restaurar fichas originais','Não apaga seu histórico','','red')}</div>
-    <p class="foot">Meu Treino · v6 · seus dados ficam salvos só neste iPhone</p>`;
+    <div class="lbl">Dados e conta</div>
+    <div class="mlist">${mi('pReset',IC.reset,'#E53935','Restaurar fichas originais','Não apaga seu histórico','','red')}${AUTH?mi('pOut',IC.trash,'#E53935','Sair deste aparelho','Seus dados continuam na nuvem','','red'):''}</div>
+    <p class="foot">Meu Treino · v7 · ${AUTH?'dados sincronizados com sua conta':'dados salvos só neste aparelho'}</p>`;
   const q=id=>document.getElementById(id);const rr=()=>{animOn=false;render();animOn=true};
   const bindSeg=(id,f)=>q(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{f(b.dataset.v);saveProfile();rr()});
   bindSeg('pMode',v=>P.mode=v);bindSeg('pObj',v=>P.obj=v);bindSeg('pSplit',v=>P.split=v);
@@ -972,6 +1112,9 @@ function renderProfile(){
   q('pAvoid').onclick=avoidSheet;
   q('pClaude').onclick=askClaude;
   q('pShare').onclick=()=>shareText('Minhas fichas',planText(plan.routines));
+  if(q('pSync'))q('pSync').onclick=()=>sync();
+  if(q('pLogin'))q('pLogin').onclick=()=>{try{localStorage.removeItem(GUK)}catch(e){}render()};
+  if(q('pOut'))q('pOut').onclick=async()=>{if(!confirm('Sair deste aparelho? Seus treinos ficam salvos na nuvem e voltam quando você entrar de novo.'))return;if(localStorage.getItem(DK))await sync({quiet:true});signOut()};
   q('pReset').onclick=()=>{if(confirm('Restaurar as fichas originais (A, B, C, D e Core)? Seu histórico continua.')){plan=defaultPlan();plan.routines.forEach(r=>r.ex.forEach(e=>{if(LIBX[e.img])e.key=e.img}));savePlan();toast('Fichas restauradas')}};
 }
 function cardioSheet(){
@@ -1232,12 +1375,15 @@ scrim.onclick=closeSheet;addEventListener('keydown',e=>{if(e.key==='Escape')clos
 let tT;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),2000)}
 
 /* ================= boot ================= */
-migrate();
+loadAuth();migrate();
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setTab(t.dataset.tab));
 const os0=openSes();if(os0&&os0.d===today()){view={name:'session',id:os0.id}}
 render();
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){const before=SES.length;SES=SES.filter(s=>{if(!s.closed&&s.d<today()){if(!s.ex.some(e=>doneCount(e)))return false;s.closed=true;s.end=s.end||s.start}return true});saveSes();animOn=false;render();animOn=true}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(AUTH)sync();const before=SES.length;SES=SES.filter(s=>{if(!s.closed&&s.d<today()){if(!s.ex.some(e=>doneCount(e)))return false;s.closed=true;s.end=s.end||s.start}return true});saveSes();animOn=false;render();animOn=true}});
 setTimeout(()=>{const s=document.getElementById('splash');s.classList.add('hide');setTimeout(()=>s.remove(),500)},matchMedia('(prefers-reduced-motion: reduce)').matches?300:1300);
+if(AUTH)setTimeout(()=>sync(),800);
+addEventListener('online',()=>sync());
+setInterval(()=>{if(AUTH&&!document.hidden)sync({quiet:false})},60000);
 if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
 
 </script>
