@@ -361,6 +361,28 @@ button:active{transform:scale(.97)}
 .hint{font-size:13.5px;line-height:1.4;margin:8px 4px 0}
 .ex .cb{font-size:17px}
 .hero[role=button]{cursor:pointer}
+.hero .go{white-space:nowrap;padding:0 16px}
+.hero .body .pill{white-space:nowrap;padding:0 12px;font-size:14px}
+
+.tabbar .tab{min-width:0}
+.tabbar .tab svg{width:23px;height:23px}
+
+.hello{font-size:40px;margin-top:10px}
+.namecard{display:block;width:100%;text-align:left;margin-top:12px;background:rgba(184,255,44,.08);border:1px dashed rgba(184,255,44,.4);border-radius:18px;padding:12px 14px;font-size:14.5px;color:var(--text)}
+.namecard b{display:block;color:var(--lime);font-weight:600;margin-top:2px}
+.weeknav{display:flex;align-items:center;justify-content:space-between;margin-top:20px}
+.weeknav span{font-family:var(--disp);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px;color:var(--muted)}
+.wn{width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center}
+.wn svg{width:16px;height:16px}.wn:disabled{opacity:.3}
+.week{margin-top:10px}
+.day2{flex:1;max-width:48px;border-radius:16px;padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--card);color:var(--muted);border:0;font:inherit}
+.day2 span{font-family:var(--disp);font-weight:700;font-size:13px;letter-spacing:.05em}
+.day2 b{font-family:var(--disp);font-weight:800;font-size:20px;color:var(--text)}
+.day2.on{background:var(--lime);color:var(--ink)}.day2.on b{color:var(--ink)}
+.day2.today{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--lime)}
+.day2:disabled{opacity:.35}
+.weekhint{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+
 .login{min-height:calc(100vh - 80px);display:flex;flex-direction:column;justify-content:center;padding:20px 0 40px}
 .llogo{width:88px;height:88px;margin:0 auto 8px;display:block;filter:drop-shadow(0 10px 30px rgba(184,255,44,.25))}
 .remember{display:flex;align-items:center;gap:10px;margin:6px 4px 4px;font-size:15px}
@@ -389,6 +411,7 @@ button:active{transform:scale(.97)}
 <div class="wrap" id="app"></div>
 <nav class="tabbar glass" id="tabbar"><div class="in"><span class="blob" id="blob"></span>
 <button class="tab on" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>Treino</button>
+<button class="tab" data-tab="fichas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>Fichas</button>
 <button class="tab" data-tab="evo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Evolução</button>
 <button class="tab" data-tab="perfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>Perfil</button>
 </div></nav>
@@ -466,7 +489,7 @@ const isCardio=e=>!(parseInt(e.sets,10)>0)&&/min/.test(String(e.reps||''));
 /* ================= estado ================= */
 let plan=null, PROFILE=null, SES=[], MED=[];
 const PK='meutreino-plan',PRK='meutreino-profile',SK='meutreino-sessions',MK='meutreino-medidas',GK='meutreino-goal',RK='meutreino-rest',PVK='meutreino-preview';
-const DEFPROFILE={mode:'gen',obj:'recomp',split:'fb',freq:5,min:75,equip:['maq','cabo','halter','barra','corpo'],avoid:['Stiff-Legged_Barbell_Deadlift'],focus:['core','trap','glute'],cardio:20,cardioKey:'Walking_Treadmill'};
+const DEFPROFILE={vary:true,mode:'gen',obj:'recomp',split:'fb',freq:5,min:75,equip:['maq','cabo','halter','barra','corpo'],avoid:['Stiff-Legged_Barbell_Deadlift'],focus:['core','trap','glute'],cardio:20,cardioKey:'Walking_Treadmill'};
 const saveSes=()=>{ss(SK,SES);markDirty()}, savePlan=()=>{ss(PK,plan);markDirty()}, saveProfile=()=>{ss(PRK,PROFILE);markDirty()}, saveMed=()=>{ss(MK,MED);markDirty()};
 const getGoal=()=>ls(GK,PROFILE?PROFILE.freq:5);const setGoal=v=>{ss(GK,v);markDirty();PROFILE.freq=v;saveProfile()};
 const getRest=()=>ls(RK,90);const setRestPref=v=>{ss(RK,Math.max(15,Math.min(600,v)));markDirty()};
@@ -486,7 +509,7 @@ function migrate(){
   if(!plan||!plan.routines)plan=defaultPlan();
   if(plan.v===2){const r=plan.routines.find(x=>x.id==='D');if(r){const e=r.ex.find(x=>x.name==='Agachamento na máquina / Hack Squat');if(e){e.name='Agachamento no smith';if(e.img==='Hack_Squat')e.img='Smith_Machine_Squat'}}plan.v=3}
   plan.routines.forEach(r=>r.ex.forEach(e=>{if(!e.key&&LIBX[e.img])e.key=e.img}));
-  PROFILE=Object.assign({},DEFPROFILE,ls(PRK,{}));
+  PROFILE=Object.assign({},DEFPROFILE,ls(PRK,{}));if(PROFILE.mode==='fichas'&&PROFILE.vary===undefined)PROFILE.vary=false;
   MED=ls(MK,[]);
   SES=ls(SK,null);
   if(!SES){SES=[];
@@ -575,11 +598,11 @@ function nextDayType(){
   const last=[...sortedSes()].reverse().find(s=>s.kind==='gen'&&order.includes(s.dayType));
   return last?order[(order.indexOf(last.dayType)+1)%order.length]:order[0];
 }
-function generate(dt){
+function generate(dt,nOv,prevOv){
   dt=dt||nextDayType();
-  const n=SES.filter(s=>s.kind==='gen').length+Math.floor(Math.random()*2);
+  const n=nOv!=null?nOv:SES.filter(s=>s.kind==='gen').length+Math.floor(Math.random()*2);
   const tpl=dayTemplate(dt,n);
-  const prev=[...sortedSes()].reverse().find(s=>s.kind==='gen');const prevKeys=prev?prev.ex.map(exKey):[];
+  const prev=[...sortedSes()].reverse().find(s=>s.kind==='gen');const prevKeys=prevOv||(prev?prev.ex.map(exKey):[]);
   const used=[];const out=[];
   const add=(slot,isAcc)=>{const L=pick(slot,used,prevKeys);if(!L)return;used.push(L.k);const e=mkEx(L);e.acc=!!isAcc;out.push(e)};
   tpl.base.forEach(s=>add(s,false));tpl.acc.forEach(s=>add(s,true));tpl.core.forEach(s=>add(s,false));
@@ -595,12 +618,39 @@ function generate(dt){
   if(PROFILE.cardio>0){const c=LIBX[PROFILE.cardioKey]||LIBX.Walking_Treadmill;out.push({id:nid(),key:c.k,name:'Cardio — '+c.n.toLowerCase(),img:c.k,sets:'',reps:PROFILE.cardio+' min',note:'',slot:'cardio'})}
   return{d:today(),dayType:dt,title:DAYNAME[dt],ex:out};
 }
-function getPreview(force){
+function variedEx(r,force){
+  const used=[];const recent=k=>{const lu=lastUsed(k);return lu&&(Date.now()-pd(lu).getTime())/864e5<6};
+  return r.ex.map(e=>{const k=exKey(e),L=LIBX[k];
+    const base={id:nid(),key:k,name:e.name,img:e.img,sets:e.sets,reps:e.reps,note:e.note||'',slot:L?L.slot:''};
+    const doVary=L&&L.slot!=='cardio'&&!e.lock&&(recent(k)||(force&&Math.random()<.5));
+    if(!doVary){used.push(k);return base}
+    const alt=pick(L.slot,used.concat([k]),[]);
+    if(!alt){used.push(k);return base}
+    used.push(alt.k);return Object.assign(base,{key:alt.k,name:alt.n,img:alt.k,orig:e.name,note:/^cada perna|^por lado|^cada lado/i.test(e.note||'')&&L.slot===alt.slot&&/Standing|One|Lunges|Step/.test(alt.k)?e.note:''})});
+}
+function getPreview(force,ridOv){
   let p=ls(PVK,null);
-  const sig=JSON.stringify([PROFILE.obj,PROFILE.split,PROFILE.min,PROFILE.equip,PROFILE.avoid,PROFILE.focus,PROFILE.cardio,PROFILE.cardioKey]);
-  if(force||!p||p.d!==today()||p.sig!==sig){p=generate(force&&p&&p.d===today()?p.dayType:undefined);p.sig=sig;ss(PVK,p)}
+  const fichas=plan.routines.filter(r=>r.ex.length);
+  const sig=JSON.stringify([PROFILE.vary,PROFILE.obj,PROFILE.split,PROFILE.min,PROFILE.equip,PROFILE.avoid,PROFILE.focus,PROFILE.cardio,PROFILE.cardioKey,fichas.map(r=>r.id+r.ex.length)]);
+  const nf=nextFicha();
+  const want=ridOv||(p&&p.d===today()&&p.pick?p.rid:(nf?nf.id:null));
+  if(force||ridOv||!p||p.d!==today()||p.sig!==sig||(fichas.length&&p.rid!==want)){
+    if(fichas.length){const r=R(want)||fichas[0];
+      p={d:today(),kind:'ficha',rid:r.id,title:r.name,letter:r.letter,ex:PROFILE.vary?variedEx(r,force&&!ridOv||(force&&ridOv&&p&&p.rid===ridOv)):r.ex.map(e=>Object.assign({},e,{id:nid(),key:exKey(e)})),pick:!!ridOv||(p&&p.pick&&p.rid===r.id)}}
+    else{p=generate(force&&p&&p.d===today()?p.dayType:undefined);p.kind='gen'}
+    p.sig=sig;ss(PVK,p)}
   return p;
 }
+
+function createFichas(replace){
+  const sp=PROFILE.split;const plan2=sp==='fb'?[['A','fb',0],['B','fb',1],['C','fb',2]]:sp==='ul'?[['A','U',0],['B','L',0],['C','U',1],['D','L',1]]:[['A','P',0],['B','Pu',0],['C','Lg',0]];
+  let prevKeys=[];const out=plan2.map(([L,dt,n])=>{const g=generate(dt,n,prevKeys);prevKeys=prevKeys.concat(g.ex.map(exKey));
+    const nm=dt==='fb'?'Full Body '+L:DAYNAME[dt].split(' (')[0].split(' —')[0]+' '+L;
+    return{id:nid(),letter:L,name:nm,ex:g.ex.map(e=>({id:nid(),key:e.key,name:e.name,img:e.img,sets:e.sets,reps:e.reps,note:e.note}))}});
+  if(replace)plan.routines=out;else{const used=new Set(plan.routines.map(r=>r.letter));out.forEach(r=>{let L=r.letter;const ab='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');if(used.has(L))L=ab.find(c=>!used.has(c))||'★';used.add(L);r.letter=L;r.name=r.name.replace(/ [A-Z]$/,' '+L)});plan.routines.push(...out)}
+  savePlan();localStorage.removeItem(PVK);
+}
+const exKeyOrig=o=>{const r=R(ls(PVK,{}).rid);if(!r)return null;const m=r.ex.find(e=>e.name===(o.orig||o.name));return m?exKey(m):null};
 function swapIn(list,idx,newKey){const old=list[idx];const L=LIBX[newKey];const e=mkEx(L);e.id=old.id;e.acc=old.acc;e.log=old.log?[]:undefined;if(old.log)e.log=[];list[idx]=e;return e}
 
 
@@ -705,7 +755,7 @@ function renderLogin(){
       try{await verifyCode(loginEmail,c,rem);
         const owner=ls(OWK,null);if(owner&&owner!==AUTH.user.id){wipeLocal();migrate()}
         ss(OWK,AUTH.user.id);localStorage.removeItem(GUK);loginStep='email';loginBusy=false;
-        toast('Bem-vindo! 💪');view={name:'home'};tab='home';render();await sync();
+        toast('Bem-vindo! 💪');view={name:'home'};tab='home';render();await sync();if(!PROFILE.name)setTimeout(nameSheet,600);
       }catch(err){loginBusy=false;renderLogin();toast(/expired|invalid/i.test(err.message)?'Código inválido ou expirado':'Erro: '+err.message)}};
     q('lgGo').onclick=go;q('lgCode').oninput=ev=>{const v=ev.target.value.replace(/\D/g,'');if(v.length>=6&&v.length===ev.target.maxLength)go()};
     q('lgBack').onclick=()=>{loginStep='email';renderLogin()}}
@@ -714,7 +764,7 @@ function renderLogin(){
 const isGuest=()=>{try{return !!localStorage.getItem(GUK)}catch(e){return false}};
 
 /* ================= UI base ================= */
-let view={name:'home'}, tab='home', editing=false;
+let view={name:'home'}, tab='home', editing=false, weekOff=0;
 const app=document.getElementById('app'),cta=document.getElementById('cta'),ctaBtn=document.getElementById('ctaBtn'),tabbar=document.getElementById('tabbar');
 let lastKey='',animOn=true;
 function render(){
@@ -727,7 +777,7 @@ function render(){
   if(view.name==='routine')return renderRoutine(R(view.id));
   if(view.name==='session')return renderSession(S(view.id));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tab));moveBlob();
-  if(tab==='home')renderHome();else if(tab==='evo')renderEvo();else renderProfile();
+  if(tab==='home')renderHome();else if(tab==='fichas')renderFichas();else if(tab==='evo')renderEvo();else renderProfile();
 }
 function go(v){view=v;editing=false;render();scrollTo(0,0)}
 function setTab(t){tab=t;view={name:'home'};editing=false;render();scrollTo(0,0)}
@@ -746,77 +796,129 @@ function startSession(src,d){
   if(cur){if(!confirm(`Você tem "${cur.title}" em andamento. Finalizar ele e começar este?`))return;closeSession(cur,true)}
   const s={id:nid(),d:d||today(),kind:src.kind,rid:src.rid||null,dayType:src.dayType||null,title:src.title,
     ex:src.ex.map(e=>({id:nid(),key:exKey(e),name:e.name,img:e.img,sets:e.sets,reps:e.reps,note:e.note||'',slot:e.slot||(LIBX[exKey(e)]||{}).slot||'',log:[]})),start:Date.now(),end:null,closed:false};
-  SES.push(s);saveSes();if(src.kind==='gen')localStorage.removeItem(PVK);
+  SES.push(s);saveSes();localStorage.removeItem(PVK);
   go({name:'session',id:s.id});
 }
 function closeSession(s,silent){s.closed=true;s.end=Date.now();if(!s.ex.some(e=>doneCount(e))){delSes(s)}saveSes();if(!silent)render()}
 
 /* ================= HOME ================= */
+function greet(){const h=new Date().getHours();const s=h<5?'Boa noite':h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+  const n=(PROFILE.name||'').trim().split(/\s+/)[0];return `${s}${n?`, <em>${esc(n)}</em>`:''}`}
+function nameSheet(){
+  openSheet(`<div class="shead"><button class="rbtn" id="nmX" aria-label="Fechar">${I.x}</button><span class="t">Seu nome</span><button class="pill lime" id="nmS">Salvar</button></div>
+    <label class="fld"><span>Como você quer ser chamado?</span><input id="nmI" value="${esc(PROFILE.name||'')}" placeholder="Ex.: Marlon" autocapitalize="words" maxlength="30"></label>`);
+  const q=id=>document.getElementById(id);q('nmX').onclick=closeSheet;setTimeout(()=>q('nmI').focus(),300);
+  const save=()=>{PROFILE.name=q('nmI').value.trim();saveProfile();closeSheet();render()};q('nmS').onclick=save;q('nmI').onkeydown=e=>{if(e.key==='Enter')save()};
+}
+
 function renderHome(){
-  const days=trainedDays();const wk=weekKeys();const L=['D','S','T','Q','Q','S','S'];
-  const strip=wk.map((k,i)=>`<div class="day ${days.has(k)?'on':''} ${k===today()?'today':''}">${L[i]}</div>`).join('');
+  const days=trainedDays();const wk=weekKeys(weekOff);const L=['D','S','T','Q','Q','S','S'];
+  const strip=wk.map((k,i)=>`<button class="day2 ${days.has(k)?'on':''} ${k===today()?'today':''}" data-wd="${k}" ${k>today()?'disabled':''} aria-label="${dLabel(k)}"><span>${L[i]}</span><b>${pd(k).getDate()}</b></button>`).join('');
+  const wr=`${pd(wk[0]).getDate()} ${MES3[pd(wk[0]).getMonth()]} – ${pd(wk[6]).getDate()} ${MES3[pd(wk[6]).getMonth()]}`;
   const cnt=weekCount(),g=getGoal(),p=Math.min(1,cnt/g),C=2*Math.PI*17;
   const goal=`<div class="goal stag" style="--i:0"><svg width="44" height="44" viewBox="0 0 44 44"><circle cx="22" cy="22" r="17" fill="none" stroke="var(--card2)" stroke-width="5"/><circle cx="22" cy="22" r="17" fill="none" stroke="#B8FF2C" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p)}" transform="rotate(-90 22 22)"/></svg>
     <div class="grow"><b>Meta da semana: ${cnt}/${g} treinos</b><div class="muted" style="font-size:13px;margin-top:2px">${cnt>=g?'Meta batida! 🎯':`Faltam ${g-cnt} ${g-cnt===1?'treino':'treinos'}`}</div></div></div>`;
   const os=openSes();let hero='';
   if(os){const dn=sesDone(os),t=os.ex.length;const img=os.ex.map(e=>imgSrcs(e.img)[0]).find(Boolean);const pc=t?dn/t:0;
     hero=heroHTML({img,tag:'▶',lab:`Em andamento · ${dLabel(os.d)}`,title:os.title,meta:`${dn} de ${t} exercícios feitos`,btn:'CONTINUAR',id:'heroGo',pct:pc})}
-  else if(PROFILE.mode==='gen'){const pv=getPreview();const img=pv.ex.map(e=>imgSrcs(e.img)[0]).find(Boolean);
-    hero=heroHTML({img,tag:'AI',lab:'Treino de hoje · gerado para você',title:pv.title,meta:`${pv.ex.length} exercícios · ${totalSets(pv.ex)} séries · ~${estMin(pv.ex)} min`,btn:'VER TREINO',id:'heroGo',extra:`<button class="pill glass" id="heroRe" style="margin-left:8px;height:44px">🔀 Gerar outro</button>`})}
-  else{const nx=nextFicha();if(nx){const img=nx.ex.map(e=>imgSrcs(e.img)[0]).find(Boolean);
-    hero=heroHTML({img,tag:esc(nx.letter),lab:'Próxima ficha',title:nx.name,meta:`${nx.ex.length} exercícios · ${totalSets(nx.ex)} séries · ~${estMin(nx.ex)} min`,btn:'COMEÇAR',id:'heroGo'})}}
+  else{const pv=getPreview();const img=pv.ex.map(e=>imgSrcs(e.img)[0]).find(Boolean);const nv=pv.ex.filter(e=>e.orig).length;
+    const isF=pv.kind==='ficha';
+    hero=heroHTML({img,tag:isF?esc(pv.letter):'AI',lab:isF?(pv.pick?'Treino escolhido para hoje':'Próximo treino · na sequência das fichas'):'Treino de hoje · gerado pelo seu perfil',title:pv.title,
+      meta:`${pv.ex.length} exercícios · ${totalSets(pv.ex)} séries · ~${estMin(pv.ex)} min${isF&&PROFILE.vary?` · ${nv?nv+' variações':'sem variações hoje'}`:''}`,btn:'VER TREINO',id:'heroGo',
+      extra:`${isF&&!PROFILE.vary?'':`<button class="pill glass" id="heroRe" style="margin-left:8px;height:44px">🔀 ${isF?'Variar':'Gerar outro'}</button>`}${isF&&plan.routines.length>1?`<button class="pill glass" id="heroPick" style="margin-left:8px;height:44px">Trocar</button>`:''}`})}
   const doneToday=SES.filter(s=>s.closed&&s.d===today());
-  if(doneToday.length)hero=`<div class="donebar stag" style="--i:1">✓ Hoje: <b>${doneToday.map(s=>esc(s.title)).join(' + ')}</b> concluído</div>`+hero.replace('Treino de hoje · gerado para você','Próximo treino · gerado para você');
+  if(doneToday.length)hero=`<div class="donebar stag" style="--i:1">✓ Hoje: <b>${doneToday.map(s=>esc(s.title)).join(' + ')}</b> concluído</div>`+hero.replace('Treino de hoje · gerado pelo seu perfil','Próximo treino · gerado pelo seu perfil');
   const nf=nextFicha();
   const list=plan.routines.map((r,i)=>{const ti=r.ex.map(e=>imgSrcs(e.img)[0]).find(Boolean);
     return `<button class="rcard stag" style="--i:${i+3}" data-open="${r.id}"><div class="tile img">${ti?`<img src="${ti}" alt="">`:''}<b>${esc(r.letter)}</b></div>
       <div class="grow"><div class="nm">${esc(r.name)}${PROFILE.mode==='fichas'&&nf===r&&!os?' <span class="nxtag">próxima</span>':''}</div><div class="meta">${r.ex.length} exercícios · ~${estMin(r.ex)} min</div></div><span class="chev">${I.chev}</span></button>`}).join('');
   app.innerHTML=`<div class="top"><span class="muted">${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</span>
     <button class="pill glass" id="logPast" style="height:38px;padding:0 14px;font-size:14px">+ Registrar treino</button></div>
-    <h1 class="ttl">Meu <em>Treino</em></h1>
-    <div class="week">${strip}</div>${goal}${hero}
-    <div class="sec">Minhas fichas</div><div class="list">${list}<button class="newbtn stag" style="--i:${plan.routines.length+3}" id="newR">${IC.plus.replace('<svg','<svg width="20" height="20"')} Nova ficha</button></div>
-    <div class="quote stag" style="--i:${plan.routines.length+4}"><p>${esc(fraseHoje())}</p><span>Frase do dia</span></div>`;
+    <h1 class="ttl hello">${greet()}</h1>
+    ${PROFILE.name?'':`<button class="namecard" id="setName">👋 Como você quer ser chamado? <b>Toque para colocar seu nome</b></button>`}
+    <div class="weeknav"><button class="wn" id="wPrev" aria-label="Semana anterior">${I.back}</button><span>${weekOff===0?'Esta semana':weekOff===1?'Semana passada':wr}</span><button class="wn" id="wNext" aria-label="Próxima semana" style="transform:scaleX(-1)" ${weekOff===0?'disabled':''}>${I.back}</button></div>
+    <div class="week">${strip}</div><div class="weekhint">Toque em um dia para ver ou registrar o treino</div>${goal}${hero}
+    ${!plan.routines.length?`<button class="namecard" id="mkF" style="margin-top:14px">📋 Você ainda não tem fichas. <b>Criar fichas a partir do meu perfil</b></button>`:''}
+    <div class="quote stag" style="--i:4"><p>${esc(fraseHoje())}</p><span>Frase do dia</span></div>`;
   const q=id=>document.getElementById(id);
   app.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>go({name:'routine',id:b.dataset.open}));
-  q('newR').onclick=newRoutine;q('logPast').onclick=()=>logPastSheet();
+  q('logPast').onclick=()=>logPastSheet();
+  if(q('mkF'))q('mkF').onclick=()=>{createFichas(true);render();toast('Fichas criadas!')};
+  if(q('heroPick'))q('heroPick').onclick=e=>{e.stopPropagation();pickFichaSheet()};
+  app.querySelectorAll('[data-wd]').forEach(b=>b.onclick=()=>dayChooser(b.dataset.wd));
+  q('wPrev').onclick=()=>{weekOff++;animOn=false;render();animOn=true};
+  q('wNext').onclick=()=>{if(weekOff>0){weekOff--;animOn=false;render();animOn=true}};
+  if(q('setName'))q('setName').onclick=nameSheet;
   if(q('heroGo'))q('heroGo').onclick=e=>{if(e.target.closest('#heroRe'))return;
     if(os)return go({name:'session',id:os.id});
-    if(PROFILE.mode==='gen')return go({name:'routine',id:'__gen'});
-    const nx=nextFicha();if(nx)go({name:'routine',id:nx.id})};
-  if(q('heroRe'))q('heroRe').onclick=e=>{e.stopPropagation();getPreview(true);animOn=false;render();animOn=true;toast('Novo treino gerado')};
+    go({name:'routine',id:'__gen'})};
+  if(q('heroRe'))q('heroRe').onclick=e=>{e.stopPropagation();const p0=ls(PVK,null);getPreview(true,p0&&p0.pick?p0.rid:undefined);animOn=false;render();animOn=true;toast('Exercícios variados')};
+}
+function pickFichaSheet(){
+  const pv=getPreview();const nf=nextFicha();
+  openSheet(`<div class="shead"><button class="rbtn" id="pfX" aria-label="Fechar">${I.x}</button><span class="t">Qual ficha hoje?</span><span style="width:44px"></span></div>
+    <div class="list">${plan.routines.filter(r=>r.ex.length).map(r=>`<button class="rcard ${pv.rid===r.id?'picked':''}" data-pf="${r.id}"><div class="tile">${esc(r.letter)}</div><div class="grow"><div class="nm">${esc(r.name)}${nf===r?' <span class="nxtag">na sequência</span>':''}</div><div class="meta">${r.ex.length} exercícios · ~${estMin(r.ex)} min</div></div>${pv.rid===r.id?'<span class="okdot">✓</span>':''}</button>`).join('')}</div>`);
+  document.getElementById('pfX').onclick=closeSheet;
+  sheet.querySelectorAll('[data-pf]').forEach(b=>b.onclick=()=>{const id=b.dataset.pf;if(nf&&id===nf.id){localStorage.removeItem(PVK);getPreview()}else getPreview(true,id);closeSheet();animOn=false;render();animOn=true});
 }
 function heroHTML(o){const C=2*Math.PI*18;
   return `<div class="hero stag" style="--i:1" id="${o.id}" role="button" tabindex="0">${o.img?`<div class="bgimg"><img src="${o.img}" alt=""></div>`:''}<div class="tag">${o.tag}</div>
     ${o.pct?`<svg class="ring" width="46" height="46" viewBox="0 0 46 46"><circle cx="23" cy="23" r="18" fill="rgba(7,17,20,.7)" stroke="rgba(255,255,255,.12)" stroke-width="4"/><circle cx="23" cy="23" r="18" fill="none" stroke="#B8FF2C" stroke-width="4" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-o.pct)}" transform="rotate(-90 23 23)"/><text x="23" y="27" text-anchor="middle" font-size="11" font-weight="700" fill="#F1F5F5">${Math.round(o.pct*100)}%</text></svg>`:''}
     <div class="body"><div class="lab">${o.lab}</div><div class="nm">${esc(o.title)}</div><div class="meta">${o.meta}</div><div style="display:flex;align-items:center"><span class="go">${o.btn} ${I.arrow}</span>${o.extra||''}</div></div></div>`}
 
+
+function renderFichas(){
+  const nf=nextFicha();const os=openSes();
+  const list=plan.routines.map((r,i)=>{const ti=r.ex.map(e=>imgSrcs(e.img)[0]).find(Boolean);
+    return `<button class="rcard stag" style="--i:${i+1}" data-open="${r.id}"><div class="tile img">${ti?`<img src="${ti}" alt="">`:''}<b>${esc(r.letter)}</b></div>
+      <div class="grow"><div class="nm">${esc(r.name)}${nf===r&&!os?' <span class="nxtag">próxima</span>':''}</div><div class="meta">${r.ex.length} exercícios · ${totalSets(r.ex)} séries · ~${estMin(r.ex)} min</div></div><span class="chev">${I.chev}</span></button>`}).join('');
+  app.innerHTML=`<div class="top"><span class="muted">Seus treinos fixos</span><span></span></div>
+    <h1 class="ttl">Fi<em>chas</em></h1>
+    <p class="muted hint" style="margin:6px 4px 16px">O app segue estas fichas em ordem (${plan.routines.map(r=>esc(r.letter)).join(' → ')||'—'}). ${PROFILE.vary?'Com a variação automática ligada, ele troca alguns exercícios por equivalentes do mesmo grupo, mantendo séries e reps.':'A variação automática está desligada: o treino segue a ficha exatamente.'}</p>
+    <div class="list">${list||'<div class="empty">Nenhuma ficha ainda.</div>'}
+      <button class="newbtn" id="newR">${IC.plus.replace('<svg','<svg width="20" height="20"')} Nova ficha</button>
+      <button class="newbtn" id="genF" style="border-color:rgba(255,255,255,.15);color:var(--text)">🤖 Gerar fichas pelo meu perfil</button></div>`;
+  const q=id=>document.getElementById(id);
+  app.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{view={name:'routine',id:b.dataset.open,from:'fichas'};editing=false;render();scrollTo(0,0)});
+  q('newR').onclick=newRoutine;
+  q('genF').onclick=()=>{
+    openSheet(`<div class="shead"><button class="rbtn" id="gfX" aria-label="Fechar">${I.x}</button><span class="t">Gerar fichas</span><span style="width:44px"></span></div>
+      <p class="muted hint">Cria fichas novas usando seu perfil: <b style="color:var(--text)">${OBJ[PROFILE.obj]}</b> · <b style="color:var(--text)">${SPLIT[PROFILE.split]}</b> · até ${PROFILE.min} min. Ajuste isso na aba Perfil.</p>
+      <button class="bigcta" id="gfAdd">Adicionar às minhas fichas</button>
+      <button class="bigcta red" id="gfRep">Substituir minhas fichas atuais</button>
+      <p class="foot">Seu histórico de treinos e cargas não é apagado.</p>`);
+    document.getElementById('gfX').onclick=closeSheet;
+    document.getElementById('gfAdd').onclick=()=>{createFichas(false);closeSheet();render();toast('Fichas adicionadas')};
+    document.getElementById('gfRep').onclick=()=>{if(confirm('Substituir todas as suas fichas pelas geradas?')){createFichas(true);closeSheet();render();toast('Fichas substituídas')}};
+  };
+}
 /* ================= FICHA / PRÉVIA (antes de começar) ================= */
 function renderRoutine(r){
   const gen=view.id==='__gen';
-  let pv=null;if(gen){pv=getPreview();r={id:'__gen',name:pv.title,letter:'AI',ex:pv.ex}}
+  let pv=null;if(gen){pv=getPreview();r={id:'__gen',name:pv.title,letter:pv.letter||'AI',ex:pv.ex}}
   if(!r)return go({name:'home'});
   const rows=r.ex.map((e,i)=>{
     if(editing&&!gen)return `<div class="ex editing" data-ex="${e.id}"><button class="minus" data-del="${i}" aria-label="Remover ${esc(e.name)}">−</button>${thumbHTML(e.img,'thumb','width:60px;height:60px')}
       <div class="grow" data-open-ed="${e.id}"><div class="nm">${esc(e.name)}</div><div class="det">${esc(detail(e))}</div></div><span class="handle" aria-label="Arrastar para reordenar">${IC.grip}</span></div>`;
     return `<div class="ex stag" style="--i:${i}" data-ex="${e.id}" role="button" tabindex="0"><span class="num">${i+1}</span>${thumbHTML(e.img)}
-      <div class="grow"><div class="nm">${esc(e.name)}</div><div class="det">${esc(detail(e))}</div>${e.note?`<div class="note">${esc(e.note)}</div>`:''}${gen&&e.slot&&SLOTNAME[e.slot]?`<div class="note">${SLOTNAME[e.slot]}</div>`:''}</div>
+      <div class="grow"><div class="nm">${esc(e.name)}</div><div class="det">${esc(detail(e))}</div>${e.note?`<div class="note">${esc(e.note)}</div>`:''}${gen&&e.orig?`<div class="note">🔀 no lugar de: ${esc(e.orig)}</div>`:gen&&e.slot&&SLOTNAME[e.slot]?`<div class="note">${SLOTNAME[e.slot]}</div>`:''}</div>
       ${gen&&e.slot!=='cardio'?`<button class="cb" data-swap="${i}" aria-label="Trocar exercício">🔀</button>`:`<span class="chev">${I.chev}</span>`}</div>`}).join('');
   app.innerHTML=`<div class="top sticky"><button class="rbtn glass" id="back" aria-label="Voltar">${I.back}</button>
-    <div style="display:flex;gap:8px">${gen?`<button class="pill glass" id="reroll">🔀 Gerar outro</button>`:editing?`<button class="pill lime" id="edit">Concluir</button>`:`<button class="pill glass" id="edit">Editar</button><button class="rbtn glass" id="rmenu" aria-label="Mais opções">${I.more}</button>`}</div></div>
-    ${gen?`<div class="lab2">Gerado · ${OBJ[PROFILE.obj]} · ${SPLIT[PROFILE.split]}</div>`:''}
+    <div style="display:flex;gap:8px">${gen?`${pv.kind!=='ficha'||PROFILE.vary?`<button class="pill glass" id="reroll">🔀 ${pv.kind==='ficha'?'Variar':'Gerar outro'}</button>`:''}${pv.kind==='ficha'?`<button class="pill glass" id="openF">Ficha</button>`:''}`:editing?`<button class="pill lime" id="edit">Concluir</button>`:`<button class="pill glass" id="edit">Editar</button><button class="rbtn glass" id="rmenu" aria-label="Mais opções">${I.more}</button>`}</div></div>
+    ${gen?`<div class="lab2">${pv.kind==='ficha'?(PROFILE.vary?'Sua ficha com variações equivalentes':'Sua ficha'):`Gerado · ${OBJ[PROFILE.obj]} · ${SPLIT[PROFILE.split]}`}</div>`:''}
     <h1 class="ttl">${esc(r.name)}</h1>
     ${editing&&!gen?`<div class="edithint">${IC.grip.replace('<svg','<svg width="20" height="20" style="flex:none;color:var(--lime)"')}<span>Arraste pela alça para reordenar. Toque no exercício para editar séries, reps e foto.</span></div>`
       :`<div class="chips mt"><span class="chip"><b>${r.ex.length}</b> exercícios</span><span class="chip"><b>${totalSets(r.ex)}</b> séries</span><span class="chip"><b>~${estMin(r.ex)}</b> min</span></div>`}
-    ${gen?`<div class="edithint" style="margin-top:12px">🔀<span>Não curtiu algum? Toque em 🔀 para trocar por um equivalente do mesmo grupo muscular.</span></div>`:''}
+    ${gen?`<div class="edithint" style="margin-top:12px">🔀<span>${pv.kind==='ficha'&&PROFILE.vary?'Séries e reps seguem sua ficha; alguns exercícios trocam por equivalentes do mesmo grupo para não repetir. ':''}Toque em 🔀 para trocar qualquer um.</span></div>`:''}
     <div class="exs" id="exs">${rows||'<div class="empty">Nenhum exercício ainda.</div>'}</div>
     ${editing&&!gen?`<button class="addbtn" id="add">+ Adicionar exercício</button>`:''}`;
   const q=id=>document.getElementById(id);
-  q('back').onclick=()=>go({name:'home'});
+  q('back').onclick=()=>{if(!gen&&view.from==='fichas'){tab='fichas'}go({name:'home'})};
   if(q('edit'))q('edit').onclick=()=>{editing=!editing;render()};
   if(q('rmenu'))q('rmenu').onclick=()=>routineMenu(r);
-  if(q('reroll'))q('reroll').onclick=()=>{getPreview(true);animOn=false;render();animOn=true;toast('Novo treino gerado')};
-  app.querySelectorAll('[data-swap]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const i=+b.dataset.swap;swapSheet(pv.ex[i],k=>{swapIn(pv.ex,i,k);ss(PVK,pv);closeSheet();animOn=false;render();animOn=true})});
+  if(q('reroll'))q('reroll').onclick=()=>{getPreview(true,pv.pick?pv.rid:undefined);animOn=false;render();animOn=true;toast(pv.kind==='ficha'?'Exercícios variados':'Novo treino gerado')};
+  if(q('openF'))q('openF').onclick=()=>go({name:'routine',id:pv.rid});
+  app.querySelectorAll('[data-swap]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const i=+b.dataset.swap;swapSheet(pv.ex[i],k=>{const o=pv.ex[i];const ne=swapIn(pv.ex,i,k);if(pv.kind==='ficha'){ne.sets=o.sets;ne.reps=o.reps;ne.orig=o.orig||o.name;if(ne.key===exKeyOrig(o))delete ne.orig}ss(PVK,pv);closeSheet();animOn=false;render();animOn=true})});
   if(!editing||gen)app.querySelectorAll('[data-ex]').forEach(el=>el.onclick=ev=>{if(ev.target.closest('[data-swap]'))return;previewEx(r.ex.find(x=>x.id===el.dataset.ex))});
   app.querySelectorAll('[data-open-ed]').forEach(el=>el.onclick=()=>openEdit(r,r.ex.find(x=>x.id===el.dataset.openEd)));
   app.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const i=+b.dataset.del;if(confirm(`Remover "${r.ex[i].name}"?`)){r.ex.splice(i,1);savePlan();render()}});
@@ -824,8 +926,8 @@ function renderRoutine(r){
   if(q('add'))q('add').onclick=()=>openEdit(r,null);
   if(editing&&!gen||!r.ex.length)return;
   cta.hidden=false;const os=openSes();
-  if(os&&(gen?os.kind==='gen':os.rid===r.id)){ctaBtn.textContent='Continuar treino';ctaBtn.onclick=()=>go({name:'session',id:os.id})}
-  else{ctaBtn.textContent='Começar treino';ctaBtn.onclick=()=>startSession(gen?{kind:'gen',title:pv.title,dayType:pv.dayType,ex:pv.ex}:{kind:'ficha',rid:r.id,title:r.name,ex:r.ex})}
+  if(os&&(gen?(pv.kind==='ficha'?os.rid===pv.rid:os.kind==='gen'):os.rid===r.id)){ctaBtn.textContent='Continuar treino';ctaBtn.onclick=()=>go({name:'session',id:os.id})}
+  else{ctaBtn.textContent='Começar treino';ctaBtn.onclick=()=>startSession(gen?(pv.kind==='ficha'?{kind:'ficha',rid:pv.rid,title:pv.title,ex:pv.ex}:{kind:'gen',title:pv.title,dayType:pv.dayType,ex:pv.ex}):{kind:'ficha',rid:r.id,title:r.name,ex:r.ex})}
 }
 const detail=e=>e.sets?`${e.sets} × ${e.reps}`:e.reps;
 function previewEx(e){
@@ -968,7 +1070,7 @@ function showSummary(s){
 function logPastSheet(pre){
   const y=new Date();y.setDate(y.getDate()-1);let d=pre||dkey(y);let choice=null;
   const opts=[...plan.routines.map(r=>({id:r.id,label:r.name,sub:`${r.ex.length} exercícios`,src:{kind:'ficha',rid:r.id,title:r.name,ex:r.ex}}))];
-  if(PROFILE.mode==='gen'){const pv=getPreview();opts.unshift({id:'__gen',label:pv.title+' (gerado)',sub:`${pv.ex.length} exercícios`,src:{kind:'gen',title:pv.title,dayType:pv.dayType,ex:pv.ex}})}
+  if(!plan.routines.length){const pv=getPreview();opts.unshift({id:'__gen',label:pv.title+' (gerado)',sub:`${pv.ex.length} exercícios`,src:{kind:'gen',title:pv.title,dayType:pv.dayType,ex:pv.ex}})}
   const draw=()=>{openSheet(`<div class="shead"><button class="rbtn" id="lpX" aria-label="Fechar">${I.x}</button><span class="t">Registrar treino feito</span><span style="width:44px"></span></div>
     <label class="fld"><span>Quando você treinou?</span><input type="date" id="lpD" value="${d}" max="${today()}"></label>
     <div class="lbl">Qual treino?</div>
@@ -1078,10 +1180,11 @@ function renderProfile(){
     <h1 class="ttl">Per<em>fil</em></h1>
     <div class="acct">${AUTH?`<div class="av">${esc(AUTH.user.email[0].toUpperCase())}</div><div class="grow"><b>${esc(AUTH.user.email)}</b><small id="syncLine">${syncText()}</small></div><button class="pill glass" id="pSync" style="height:36px;padding:0 12px;font-size:13px">Sincronizar</button>`
       :`<div class="av">?</div><div class="grow"><b>Sem conta</b><small>Dados salvos só neste aparelho</small></div><button class="pill lime" id="pLogin" style="height:36px;padding:0 14px;font-size:13px">Entrar</button>`}</div>
-    <div class="lbl">Como montar o treino do dia</div>
-    ${seg('pMode',{gen:'🤖 Gerador automático',fichas:'📋 Minhas fichas'},P.mode)}
-    <p class="muted hint">${P.mode==='gen'?'O app monta um treino novo a cada dia, variando exercícios equivalentes e respeitando seu objetivo e divisão.':'O app segue suas fichas na ordem (A → B → C…), a partir do último treino registrado.'}</p>
-    <div class="lbl">Objetivo</div>${seg('pObj',OBJ,P.obj)}
+    <div class="mlist" style="margin-top:12px">${mi('pName',IC.pencil,'#1E88E5','Seu nome',PROFILE.name||'Toque para definir')}</div>
+    <div class="lbl">Treino do dia</div>
+    ${seg('pVary',{on:'🔀 Variar exercícios',off:'📋 Ficha exata'},P.vary?'on':'off')}
+    <p class="muted hint">${P.vary?'Segue suas fichas em ordem, mas troca alguns exercícios por equivalentes do mesmo grupo muscular (os que você fez há mais tempo), mantendo séries e reps.':'Segue suas fichas em ordem, exatamente como estão.'}</p>
+    <div class="lbl">Objetivo (usado ao gerar fichas e variações)</div>${seg('pObj',OBJ,P.obj)}
     <div class="lbl">Divisão de treino</div>${seg('pSplit',SPLIT,P.split)}
     <p class="muted hint">Objetivo e divisão são independentes. Trocar um ou outro não apaga seu histórico.</p>
     <div class="lbl">Rotina</div>
@@ -1099,10 +1202,10 @@ function renderProfile(){
     <div class="mlist">${mi('pClaude',IC.claude,'#D97757','Conversar com o Claude','Copia seu perfil, fichas e histórico e abre o Claude')}${mi('pShare',IC.share,'#00ACC1','Compartilhar fichas','Enviar por WhatsApp, mensagem…')}</div>
     <div class="lbl">Dados e conta</div>
     <div class="mlist">${mi('pReset',IC.reset,'#E53935','Restaurar fichas originais','Não apaga seu histórico','','red')}${AUTH?mi('pOut',IC.trash,'#E53935','Sair deste aparelho','Seus dados continuam na nuvem','','red'):''}</div>
-    <p class="foot">Meu Treino · v7 · ${AUTH?'dados sincronizados com sua conta':'dados salvos só neste aparelho'}</p>`;
+    <p class="foot">Meu Treino · v8 · ${AUTH?'dados sincronizados com sua conta':'dados salvos só neste aparelho'}</p>`;
   const q=id=>document.getElementById(id);const rr=()=>{animOn=false;render();animOn=true};
   const bindSeg=(id,f)=>q(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{f(b.dataset.v);saveProfile();rr()});
-  bindSeg('pMode',v=>P.mode=v);bindSeg('pObj',v=>P.obj=v);bindSeg('pSplit',v=>P.split=v);
+  bindSeg('pVary',v=>P.vary=v==='on');bindSeg('pObj',v=>P.obj=v);bindSeg('pSplit',v=>P.split=v);
   const bindMulti=(id,arr)=>q(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{const v=b.dataset.v,i=arr.indexOf(v);if(i>=0)arr.splice(i,1);else arr.push(v);saveProfile();rr()});
   bindMulti('pEq',P.equip);bindMulti('pFocus',P.focus);
   q('pFreq').onclick=()=>stepSheet('Treinos por semana','Quantas sessões por semana?',P.freq,1,7,1,'por semana',v=>{setGoal(v)});
@@ -1112,6 +1215,7 @@ function renderProfile(){
   q('pAvoid').onclick=avoidSheet;
   q('pClaude').onclick=askClaude;
   q('pShare').onclick=()=>shareText('Minhas fichas',planText(plan.routines));
+  q('pName').onclick=nameSheet;
   if(q('pSync'))q('pSync').onclick=()=>sync();
   if(q('pLogin'))q('pLogin').onclick=()=>{try{localStorage.removeItem(GUK)}catch(e){}render()};
   if(q('pOut'))q('pOut').onclick=async()=>{if(!confirm('Sair deste aparelho? Seus treinos ficam salvos na nuvem e voltam quando você entrar de novo.'))return;if(localStorage.getItem(DK))await sync({quiet:true});signOut()};
@@ -1348,7 +1452,7 @@ function routineMenu(r){
 function newRoutine(){
   const used=new Set(plan.routines.map(r=>r.letter));const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').find(c=>!used.has(c))||'★';
   const r={id:nid(),letter:L,name:'Treino '+L,ex:[]};plan.routines.push(r);savePlan();
-  view={name:'routine',id:r.id};editing=true;render();scrollTo(0,0);setTimeout(()=>routineInfo(r),350);
+  view={name:'routine',id:r.id,from:'fichas'};editing=true;render();scrollTo(0,0);setTimeout(()=>routineInfo(r),350);
 }
 /* ---------- descanso ---------- */
 let restT=null;
